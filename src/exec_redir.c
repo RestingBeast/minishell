@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   exec_redir.c                                       :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: kkhant-z <kkhant-z@student.42singapore.sg  +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2026/10/17 22:33:39 by kkhant-z          #+#    #+#             */
+/*   Updated: 2026/10/17 22:33:41 by kkhant-z         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "minishell.h"
 
 static int	get_flags(t_type type)
@@ -28,7 +40,7 @@ static void	set_fds(t_type type, t_exec *exec, int fd)
 static	int	copy_heredoc_fd(t_redir *rdr, t_exec *exec)
 {
 	int	fd;
-	
+
 	fd = dup(rdr->target.fd);
 	if (fd == -1)
 		return (0);

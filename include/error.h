@@ -65,5 +65,4 @@ void	set_cmd_err(t_err *err, char *cmd);
 void	set_cmd_not_found_err(t_err *err, char *cmd);
 void	set_dir_err(t_err *err, char *cmd);
 
-
 #endif
