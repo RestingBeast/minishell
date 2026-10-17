@@ -14,7 +14,7 @@
 
 static void	expand_and_write(char *line, int fd, t_data *data, int has_quotes)
 {
-	int	i;
+	int		i;
 	char	*tmp;
 
 	i = -1;
@@ -123,8 +123,8 @@ t_redir	*handle_heredoc(t_list *tok, t_data *data)
 	int		has_quotes;
 
 	has_quotes = 0;
-	if (ft_strchr(((t_token *)tok->next->content)->lexeme, '\'') ||
-			ft_strchr(((t_token *)tok->next->content)->lexeme, '\"'))
+	if (ft_strchr(((t_token *)tok->next->content)->lexeme, '\'')
+		|| ft_strchr(((t_token *)tok->next->content)->lexeme, '\"'))
 		has_quotes = 1;
 	delimiter = strip_quotes(((t_token *)tok->next->content)->lexeme);
 	if (!delimiter)

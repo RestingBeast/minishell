@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   exec_ext.c                                         :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: kkhant-z <kkhant-z@student.42singapore.sg  +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2026/10/17 22:33:23 by kkhant-z          #+#    #+#             */
+/*   Updated: 2026/10/17 22:33:24 by kkhant-z         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "minishell.h"
 
 /*
@@ -52,7 +64,7 @@ void	exec_external(t_exec *exec, t_data *data)
 	env_arr = env_to_array(data->env);
 	if (!env_arr)
 		return (free(full_cmd), close_fds(exec->in_fd, exec->out_fd),
-					set_malloc_err(&(data->err)));
+			set_malloc_err(&(data->err)));
 	pid = fork();
 	if (pid == 0)
 	{

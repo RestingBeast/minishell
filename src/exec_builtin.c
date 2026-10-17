@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   exec_builtin.c                                     :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: kkhant-z <kkhant-z@student.42singapore.sg  +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2026/10/17 22:33:15 by kkhant-z          #+#    #+#             */
+/*   Updated: 2026/10/17 22:33:17 by kkhant-z         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "minishell.h"
 
 static int	is_one_cmd(t_data *data)
@@ -42,14 +54,14 @@ void	exec_builtin(t_exec *exec, t_data *data)
 
 	if (!is_one_cmd(data))
 		return (fork_builtin(exec, data),
-					close_fds(exec->in_fd, exec->out_fd));
+			close_fds(exec->in_fd, exec->out_fd));
 	fd = dup(STDOUT_FILENO);
 	if (fd == -1)
 		return (close_fds(exec->in_fd, exec->out_fd),
-					set_syscall_err(&(data->err)));
+			set_syscall_err(&(data->err)));
 	if (exec->out_fd >= 0 && dup2(exec->out_fd, STDOUT_FILENO) == -1)
 		return (close_fds(exec->in_fd, exec->out_fd),
-					close(fd), set_syscall_err(&(data->err)));
+			close(fd), set_syscall_err(&(data->err)));
 	data->status = run_builtin(exec->args, &(data->env),
 			data->status, &(data->should_exit));
 	if (dup2(fd, STDOUT_FILENO) == -1)

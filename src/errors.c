@@ -36,8 +36,8 @@ static void	print_err_msg(t_err *err)
 		ft_putstr_fd("\'\n", STDERR_FILENO);
 		return ;
 	}
-	if (err->type == CMD_ERROR || err->type == CMD_NOT_FOUND 
-			|| err->type == IS_DIR_ERR)
+	if (err->type == CMD_ERROR || err->type == CMD_NOT_FOUND
+		|| err->type == IS_DIR_ERR)
 	{
 		print_cmd_err_msg(err->type, err->err_no, err->msg);
 		return ;
@@ -56,10 +56,10 @@ static void	print_err_msg(t_err *err)
 int	get_status(t_err_type type)
 {
 	if (type == MALLOC_ERROR || type == SYSCALL_ERR || type == AMBIGUOUS_ERR
-			|| type == FILE_ERR)
+		|| type == FILE_ERR)
 		return (1);
 	if (type == UNCLOSED_QUOTE || type == UNEXPECTED_TOK || type == END_PIPE
-			|| type == END_REDIR)
+		|| type == END_REDIR)
 		return (2);
 	if (type == CMD_ERROR || type == IS_DIR_ERR)
 		return (126);
