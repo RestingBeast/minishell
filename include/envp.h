@@ -14,6 +14,9 @@
 # define ENVP_H
 # include "libft.h"
 
+/* PATH given to a shell started without one, like env -i ./minishell. */
+# define DEFAULT_PATH "/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin"
+
 /* Each node's content is one malloc'd string: "KEY=value", or "KEY". */
 
 int		env_init(t_list **env, char **envp);
