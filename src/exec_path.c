@@ -16,44 +16,62 @@ static int	is_exec_file(char *file)
 {
 	struct stat	statbuf;
 
-	if (access(file, X_OK) != 0)
-		return (0);
 	if (stat(file, &statbuf) == -1 || S_ISDIR(statbuf.st_mode))
 		return (0);
+	if (access(file, X_OK) != 0)
+		return (-1);
 	return (1);
 }
 
-static char	*search_path(char *cmd, char *path, t_err *err)
+static char	*join_path(char *dir, char *cmd)
 {
-	char	**dirs;
-	char	*dir;
+	char	*tmp;
 	char	*res;
-	int		i;
 
-	dirs = ft_split(path, ':');
-	if (!dirs)
-		return (set_malloc_err(err), NULL);
+	tmp = ft_strjoin(dir, "/");
+	if (!tmp)
+		return (NULL);
+	res = ft_strjoin(tmp, cmd);
+	free(tmp);
+	return (res);
+}
+
+/*
+** Looks for cmd in each directory of PATH. Frees dirs before returning.
+*/
+static char	*search_path(char *cmd, char **dirs, t_err *err)
+{
+	char	*res;
+	char	*saved;
+	int		i;
+	int		flag;
+
 	i = -1;
+	saved = NULL;
 	while (dirs[++i] != NULL)
 	{
-		dir = ft_strjoin(dirs[i], "/");
-		if (!dir)
-			return (ft_argclear(dirs), set_malloc_err(err), NULL);
-		res = ft_strjoin(dir, cmd);
-		free(dir);
+		res = join_path(dirs[i], cmd);
 		if (!res)
-			return (ft_argclear(dirs), set_malloc_err(err), NULL);
-		if (is_exec_file(res))
-			return (ft_argclear(dirs), res);
-		free(res);
+			return (ft_argclear(dirs), set_malloc_err(err), free(saved), NULL);
+		flag = is_exec_file(res);
+		if (flag == 1)
+			return (ft_argclear(dirs), free(saved), res);
+		if (flag == -1 && !saved)
+			saved = res;
+		else
+			free(res);
 	}
 	ft_argclear(dirs);
+	if (saved)
+		return (saved);
 	return (set_cmd_not_found_err(err, cmd), NULL);
 }
 
 /*
 ** A command with a '/' is used as it is, no PATH search. Like bash, so is
-** any command when PATH is unset or empty: it is looked up in the cwd.
+** any command when PATH is unset: it is looked up in the cwd.
+** An empty PATH is different: it is searched like PATH=".", so a miss
+** is still "command not found".
 ** Returns a copy, so the caller can always free the result.
 */
 static char	*check_slash_cmd(char *cmd, t_err *err)
@@ -82,13 +100,19 @@ static char	*check_slash_cmd(char *cmd, t_err *err)
 char	*find_command(char *cmd, t_data *data)
 {
 	char	*path;
+	char	**dirs;
 
 	if (cmd[0] == '\0')
 		return (set_cmd_not_found_err(&(data->err), cmd), NULL);
 	if (ft_strchr(cmd, '/') != NULL)
 		return (check_slash_cmd(cmd, &(data->err)));
 	path = env_get(data->env, "PATH");
-	if (!path || !*path)
+	if (!path)
 		return (check_slash_cmd(cmd, &(data->err)));
-	return (search_path(cmd, path, &(data->err)));
+	if (!*path)
+		path = ".";
+	dirs = ft_split(path, ':');
+	if (!dirs)
+		return (set_malloc_err(&(data->err)), NULL);
+	return (search_path(cmd, dirs, &(data->err)));
 }

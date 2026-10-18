@@ -33,12 +33,12 @@ static void	fork_builtin(t_exec *exec, t_data *data)
 			ft_putstr_fd("minishell: ", STDERR_FILENO);
 			ft_putstr_fd(strerror(errno), STDERR_FILENO);
 			ft_putstr_fd("\n", STDERR_FILENO);
-			close_fds(exec->in_fd, exec->out_fd);
 		}
 		else
 			data->status = run_builtin(exec->args, &(data->env),
 					data->status, &(data->should_exit));
 		clean_exit(data);
+		close(STDOUT_FILENO);
 		close_fds(exec->in_fd, exec->out_fd);
 		exit(data->status);
 	}
