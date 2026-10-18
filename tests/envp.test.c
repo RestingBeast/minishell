@@ -12,7 +12,8 @@ static t_list	*make_env(char **envp)
 }
 
 /*
-** Same as make_env, but without the variables env_init adds on its own,
+** Same as make_env, but without the variables env_init adds on its own
+** (PWD, SHLVL, OLDPWD and DEFAULT_PATH when envp has no PATH),
 ** so the list holds exactly what the test gave it.
 */
 static t_list	*plain_env(char **envp)
@@ -22,6 +23,8 @@ static t_list	*plain_env(char **envp)
 	env_unset(&env, "PWD");
 	env_unset(&env, "SHLVL");
 	env_unset(&env, "OLDPWD");
+	if (ft_strncmp(env_get(env, "PATH"), DEFAULT_PATH, sizeof(DEFAULT_PATH)) == 0)
+		env_unset(&env, "PATH");
 	return (env);
 }
 
@@ -43,7 +46,7 @@ Test(EnvInit, copies_every_variable)
 	char	*envp[] = {"A=1", "B=hello world", "C=x=y", NULL};
 	t_list	*env = make_env(envp);
 
-	cr_assert_eq(ft_lstsize(env), 6);
+	cr_assert_eq(ft_lstsize(env), 7);
 	cr_assert_str_eq(env_get(env, "A"), "1");
 	cr_assert_str_eq(env_get(env, "B"), "hello world");
 	cr_assert_str_eq(env_get(env, "C"), "x=y");
@@ -66,11 +69,12 @@ static void	check_startup_only(t_list *env)
 {
 	char	*cwd = getcwd(NULL, 0);
 
-	cr_assert_eq(ft_lstsize(env), 3);
+	cr_assert_eq(ft_lstsize(env), 4);
 	cr_assert_str_eq(env_get(env, "PWD"), cwd);
 	cr_assert_str_eq(env_get(env, "SHLVL"), "1");
 	cr_assert_not_null(env_find(env, "OLDPWD"));
 	cr_assert_null(env_get(env, "OLDPWD"));
+	cr_assert_str_eq(env_get(env, "PATH"), DEFAULT_PATH);
 	free(cwd);
 }
 
@@ -89,6 +93,20 @@ Test(EnvInit, null_envp)
 	t_list	*env = make_env(NULL);
 
 	check_startup_only(env);
+	ft_lstclear(&env, free);
+}
+
+// A PATH that is already set, even empty, is kept as it is.
+Test(EnvInit, keeps_inherited_path)
+{
+	char	*envp[] = {"PATH=/bin", NULL};
+	char	*empty[] = {"PATH=", NULL};
+	t_list	*env = make_env(envp);
+
+	cr_assert_str_eq(env_get(env, "PATH"), "/bin");
+	ft_lstclear(&env, free);
+	env = make_env(empty);
+	cr_assert_str_eq(env_get(env, "PATH"), "");
 	ft_lstclear(&env, free);
 }
 
@@ -324,7 +342,7 @@ Test(EnvGet, missing_key_returns_null)
 Test(EnvGet, does_not_match_part_of_a_key)
 {
 	char	*envp[] = {"PATHX=1", NULL};
-	t_list	*env = make_env(envp);
+	t_list	*env = plain_env(envp);
 
 	cr_assert_null(env_get(env, "PATH"));
 	cr_assert_null(env_get(env, "PAT"));

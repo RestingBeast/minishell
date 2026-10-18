@@ -6,8 +6,8 @@
 #include <unistd.h>
 
 /*
-** Makes an env list holding exactly ENVP: env_init adds PWD, SHLVL
-** and OLDPWD on its own, so they are removed again.
+** Makes an env list holding exactly ENVP: env_init adds PWD, SHLVL,
+** OLDPWD and DEFAULT_PATH on its own, so they are removed again.
 */
 static t_list	*make_env(char **envp)
 {
@@ -17,6 +17,8 @@ static t_list	*make_env(char **envp)
 	env_unset(&env, "PWD");
 	env_unset(&env, "SHLVL");
 	env_unset(&env, "OLDPWD");
+	if (ft_strncmp(env_get(env, "PATH"), DEFAULT_PATH, sizeof(DEFAULT_PATH)) == 0)
+		env_unset(&env, "PATH");
 	return (env);
 }
 
@@ -272,14 +274,14 @@ Test(Cd, no_argument_and_no_home,
 	ft_lstclear(&env, free);
 }
 
-// Command: cd /tmp /
+// Command: cd /tmp /   (a usage error: status 2, like bash --posix)
 Test(Cd, too_many_arguments,
 	.init = save_dir_and_redirect, .fini = restore_dir)
 {
 	char	*argv[] = {"cd", "/tmp", "/", NULL};
 	t_list	*env = make_env(NULL);
 
-	cr_assert_eq(builtin_cd(argv, &env), 1);
+	cr_assert_eq(builtin_cd(argv, &env), 2);
 	cr_assert_null(env_find(env, "PWD"));
 	cr_assert_stderr_eq_str("minishell: cd: too many arguments\n");
 	ft_lstclear(&env, free);
@@ -313,8 +315,8 @@ Test(Cd, not_a_directory, .init = save_dir_and_redirect, .fini = restore_dir)
 	ft_lstclear(&env, free);
 }
 
-// Command: cd ""   (bash stays where it is and still sets OLDPWD)
-Test(Cd, empty_argument_stays_here,
+// Command: cd ""   (an error in bash --posix: nothing changes)
+Test(Cd, empty_argument_is_an_error,
 	.init = save_dir_and_redirect, .fini = restore_dir)
 {
 	char	*argv[] = {"cd", "", NULL};
@@ -322,10 +324,10 @@ Test(Cd, empty_argument_stays_here,
 	char	*cwd = getcwd(NULL, 0);
 
 	env_set(&env, "PWD", cwd);
-	cr_assert_eq(builtin_cd(argv, &env), 0);
+	cr_assert_eq(builtin_cd(argv, &env), 1);
 	cr_assert_str_eq(env_get(env, "PWD"), cwd);
-	cr_assert_str_eq(env_get(env, "OLDPWD"), cwd);
-	cr_assert_stderr_eq_str("");
+	cr_assert_null(env_find(env, "OLDPWD"));
+	cr_assert_stderr_eq_str("minishell: cd: null directory\n");
 	free(cwd);
 	ft_lstclear(&env, free);
 }
@@ -647,13 +649,13 @@ Test(Exit, not_a_number_message, .init = no_terminal)
 		"minishell: exit: abc: numeric argument required\n");
 }
 
-// Command: exit 1 2   (error, and the shell keeps running)
+// Command: exit 1 2   (error with status 2, and the shell keeps running)
 Test(Exit, too_many_arguments, .init = no_terminal)
 {
 	char	*argv[] = {"exit", "1", "2", NULL};
 	int		should_exit = 1;
 
-	cr_assert_eq(builtin_exit(argv, 0, &should_exit), 1);
+	cr_assert_eq(builtin_exit(argv, 0, &should_exit), 2);
 	cr_assert_eq(should_exit, 0);
 	cr_assert_stderr_eq_str("minishell: exit: too many arguments\n");
 }
