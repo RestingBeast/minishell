@@ -21,6 +21,8 @@ static void	child_fail(char *full_cmd, char **env_arr, t_data *data)
 	int	err_no;
 
 	err_no = errno;
+	close(STDIN_FILENO);
+	close(STDOUT_FILENO);
 	ft_putstr_fd("minishell: ", STDERR_FILENO);
 	print_cmd_err_msg(CMD_ERROR, err_no, full_cmd);
 	free(full_cmd);
