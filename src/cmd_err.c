@@ -23,7 +23,7 @@ void	print_cmd_err_msg(t_err_type type, int err_no, char *msg)
 	if (type == IS_DIR_ERR)
 		ft_putstr_fd("Is a directory", STDERR_FILENO);
 	else if (type == CMD_NOT_FOUND && err_no == 0)
-		ft_putstr_fd("command not found...", STDERR_FILENO);
+		ft_putstr_fd("command not found", STDERR_FILENO);
 	else
 		ft_putstr_fd(strerror(err_no), STDERR_FILENO);
 	ft_putstr_fd("\n", STDERR_FILENO);
