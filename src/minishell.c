@@ -28,13 +28,15 @@ static int	init_envlst(t_list **env)
 /*
 ** Ctrl-D at the prompt or the exit builtin. Like bash, "exit" is
 ** printed only when someone is typing (stdin is a terminal), and on stderr.
+** After the exit builtin it was already printed by exec_builtin(),
+** before any error from exit, so here it is only printed for Ctrl-D.
 ** stdin and stdout are closed so valgrind --track-fds does not report
 ** stdout after a builtin redirection restored it with dup2().
 ** stderr stays open: ASan prints its leak report there at exit.
 */
 static void	end_shell(t_data *data)
 {
-	if (isatty(STDIN_FILENO))
+	if (!data->should_exit && isatty(STDIN_FILENO))
 		ft_putendl_fd("exit", STDERR_FILENO);
 	clean_exit(data);
 	close(STDIN_FILENO);

@@ -10,13 +10,16 @@ turns it into a tree of commands, and runs it.
 
 It supports:
 
-- **Commands** found through `PATH`, or given as a relative or absolute path
+- **Commands** found through `PATH`, or given as a relative or absolute path.
+  Started without `PATH` (`env -i ./minishell`), it uses a default one
+  (`/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin`); unlike bash, it is exported
 - **Quotes**: `'...'` keeps everything as typed, `"..."` still expands `$`
 - **Variables**: `$NAME` and `$?` (exit status of the last command)
 - **Redirections**: `<`, `>`, `>>`, and `<<` (heredoc)
 - **Heredocs** expand variables, unless the delimiter is quoted (`<< 'EOF'`)
 - **Pipes**: `cmd1 | cmd2 | ...`, with all commands running at the same time
-- **Builtins**: `echo` (with `-n`), `cd`, `pwd`, `export`, `unset`, `env`, `exit`
+- **Builtins**: `echo` (with `-n`), `cd` (also `cd -`), `pwd`, `export`,
+  `unset`, `env`, `exit`
 - **Signals**: `Ctrl-C` shows a new prompt, `Ctrl-D` exits, `Ctrl-\` does nothing
   at the prompt; while a command runs they behave like in bash
 - **Exit statuses** like bash: `127` command not found, `126` not executable,

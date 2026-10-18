@@ -55,6 +55,8 @@ void	exec_builtin(t_exec *exec, t_data *data)
 	if (!is_one_cmd(data))
 		return (fork_builtin(exec, data),
 			close_fds(exec->in_fd, exec->out_fd));
+	if (ft_strncmp(exec->args[0], "exit", 5) == 0 && isatty(STDIN_FILENO))
+		ft_putendl_fd("exit", STDERR_FILENO);
 	fd = dup(STDOUT_FILENO);
 	if (fd == -1)
 		return (close_fds(exec->in_fd, exec->out_fd),
