@@ -1,5 +1,5 @@
 CC = cc
-CFLAGS = -Wall -Wextra -Werror
+CFLAGS = -Wall -Wextra -Werror -g -fsanitize=address
 MAKE = make
 NAME = minishell
 LIBFT_DIR = libft
@@ -52,6 +52,19 @@ SRC = src/minishell.c \
 	  src/exec_utils.c
 OBJ = $(SRC:.c=.o)
 
+TEST = run-tests
+TEST_LIB_OBJ = $(filter-out src/minishell.o, $(OBJ))
+TEST_SRC = tests/lexer.test.c \
+	   tests/envp.test.c \
+	   tests/builtins.test.c \
+	   tests/lexer_helpers.c \
+	   tests/parser.test.c \
+	   tests/parser_helpers.c \
+	   tests/test_utils.c \
+	   tests/expand.test.c \
+	   tests/malloc_wrap.c
+TEST_OBJ = $(TEST_SRC:.c=.o)
+
 all: $(LIBFT) $(NAME)
 
 $(LIBFT):
@@ -64,13 +77,25 @@ $(NAME): $(OBJ) $(LIBFT)
 	$(CC) $(CFLAGS) $(INCLUDE) -o $@ -c $<
 
 clean:
-	rm -f $(OBJ)
+	rm -f $(OBJ) $(TEST_OBJ)
 	$(MAKE) -C $(LIBFT_DIR) clean
 
 fclean: clean
 	rm -f $(NAME)
+	rm -f $(TEST)
 	$(MAKE) -C $(LIBFT_DIR) fclean
 
 re: fclean all
 
-.PHONY: all clean fclean re
+image:
+	docker build -t minishell-criterion .
+
+# This target must be run inside the Docker container created by `make image`.
+# malloc is wrapped so tests/envp.test.c can make it fail on purpose.
+test: $(TEST_OBJ) $(TEST_LIB_OBJ) $(LIBFT)
+	$(CC) $(CFLAGS) $(INCLUDE) -o $(TEST) \
+	$(TEST_OBJ) $(TEST_LIB_OBJ) $(LIBFT) $(READLINE) -lcriterion -Wl,--wrap=malloc \
+	&& ./$(TEST) \
+	-S --always-succeed --color=always;
+
+.PHONY: all clean fclean re image test
