@@ -52,8 +52,7 @@ static int	read_number(char *arg, unsigned long long *number, int *negative)
 ** everything first and then call exit().
 **   exit         -> last_status ($?)
 **   exit 42      -> 42, and 256 -> 0, -1 -> 255 (the code is 0 to 255)
-**   exit abc     -> error, status 2. Like bash --posix, the shell only
-**                   exits when nobody is typing (stdin is not a terminal)
+**   exit abc     -> error, and the shell exits with status 2
 **   exit 1 2     -> error, returns 2 (like bash --posix) and the shell
 **                   keeps running
 ** Like bash, "exit" is printed only when someone types the commands,
@@ -70,7 +69,6 @@ int	builtin_exit(char **argv, int last_status, int *should_exit)
 		return (last_status);
 	if (!read_number(argv[1], &number, &negative))
 	{
-		*should_exit = !isatty(STDIN_FILENO);
 		print_error("exit", argv[1], "numeric argument required");
 		return (2);
 	}
